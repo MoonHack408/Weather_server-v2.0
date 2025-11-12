@@ -1,0 +1,30 @@
+name: Update Weather
+
+on:
+  schedule:
+    - cron: '0,10,20,30,40,50 * * * *'
+
+jobs:
+  update-weather:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Update weather data
+      run: node .github/scripts/update-weather.js
+      env:
+        OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+        
+    - name: Commit changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add weather_data.json
+        git diff --staged --quiet || git commit -m "🔄 Auto-update weather"
+        git push
